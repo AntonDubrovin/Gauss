@@ -89,22 +89,37 @@ public class ProfileMatrix implements Matrix {
         return setElement(j, i, au, newValue);
     }
 
+    public double getL(int i, int j) {
+        if (j > i) return 0.0;
+        return get(i, j);
+    }
+
+    public double getU(int i, int j) {
+        if (i == j) {
+            return 1.0;
+        }else if (i > j) {
+            return 0.0;
+        } else {
+            return get(i, j);
+        }
+    }
+
 
     public void splitMatrix() {
         setL(0, 0, get(0, 0));
         for (int i = 1; i < size; i++) {
-            for (int j = 0; j < i - 1; j++) {
-                setL(i, j, get(i, j) - sum(i, j, j));
-                setU(j, i, (get(j, i) - sum(j, i, j)) / get(j, j));
-                setL(i, i, get(i, i) - sum(i, i, i));
+            for (int j = 0; j < i; j++) {
+                setL(i, j, getL(i, j) - sum(i, j, j));
+                setU(j, i, (get(j, i) - sum(j, i, j)) / getL(j, j));
             }
+            setL(i, i, get(i, i) - sum(i, i, i));
         }
     }
 
     private Double sum(int i, int j, int border) {
         double result = 0.0;
-        for (int k = 0; k < border - 1; k++) {
-            result += get(i, k) * get(k, j);
+        for (int k = 0; k < border; k++) {
+            result += getL(i, k) * getU(k, j);
         }
         return result;
     }

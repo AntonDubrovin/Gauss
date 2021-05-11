@@ -13,6 +13,7 @@ public class Main {
             }
             System.out.println();
         }
+        System.out.println();
         profileMatrix.splitMatrix();
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {

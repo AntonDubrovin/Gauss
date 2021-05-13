@@ -153,5 +153,9 @@ public class ProfileMatrix implements Matrix {
         return ans;
     }
 
+    public List<Double> gauss() {
+        return gaussU(gaussL());
+    }
+
 
 }

@@ -1,28 +1,27 @@
 package com.approx.third;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
 
     public static void main(String[] args) {
         MatrixGenerator matrixGenerator = new MatrixGenerator("first_try");
-        matrixGenerator.parseMatrix("testMatrix");
+        matrixGenerator.parseProfileMatrix("testMatrix");
 
         ProfileMatrix profileMatrix = new ProfileMatrix("first_try");
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                System.out.print(profileMatrix.get(i,j) + " ");
-            }
-            System.out.println();
-        }
-        System.out.println();
         profileMatrix.splitMatrix();
 
-        List<Double> lst = profileMatrix.gaussL();
+        List<Double> result = profileMatrix.gauss();
+        for (Double an : result) {
+            System.out.print(an + " ");
+        }
+        System.out.println();
 
-        List<Double> ans = profileMatrix.gaussU(lst);
-        for (Double aDouble : ans) {
-            System.out.println(aDouble);
+        BaseMatrix baseMatrix = matrixGenerator.parseBaseMatrix("testMatrix");
+        List<Double> ans = baseMatrix.gauss();
+        for (Double an : ans) {
+            System.out.print(an + " ");
         }
 
     }

@@ -41,7 +41,23 @@ public final class MatrixGenerator {
         }
     }
 
-    public void parseMatrix(final String fileName) {
+    public BaseMatrix parseBaseMatrix(final String fileName) {
+        BaseMatrix baseMatrix = new BaseMatrix();
+        try (BufferedReader bufferedReader = Files.newBufferedReader(Path.of(fileName))) {
+            final int matrixSize = Integer.parseInt(bufferedReader.readLine());
+            for (int i = 0; i < matrixSize; i++) {
+                List<String> currentLine = Arrays.asList(bufferedReader.readLine().split(" "));
+                baseMatrix.add(currentLine);
+            }
+            baseMatrix.setB(Arrays.stream(bufferedReader.readLine().split(" ")).map(Double::parseDouble).collect(Collectors.toList()));
+            return baseMatrix;
+        } catch (final IOException exception) {
+            return new BaseMatrix();
+        }
+    }
+
+
+    public void parseProfileMatrix(final String fileName) {
         BaseMatrix baseMatrix = new BaseMatrix();
         ia.add(1);
         try (BufferedReader bufferedReader = Files.newBufferedReader(Path.of(fileName))) {

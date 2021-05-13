@@ -8,9 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -66,6 +64,75 @@ public final class MatrixGenerator {
             } catch (final @NotNull IOException exception) {
                 exception.printStackTrace();
             }
+        }
+    }
+
+
+
+    public List<Double> generateList(int n, double min, double max) {
+        List<Double> ans = new ArrayList<>(n);
+        Random random = new Random();
+        for (int i = 0; i < n; i++) {
+            ans.add(min + (max - min) * random.nextDouble());
+        }
+        return ans;
+    }
+
+    public List<Double> computeB(BaseMatrix baseMatrix, List<Double> ans) {
+        List<Double> b = new ArrayList<>();
+        for (int k = 0; k < baseMatrix.size(); k++) {
+            double sum = 0;
+            for (int i = 0; i < baseMatrix.size(); i++) {
+                sum += ans.get(i) * baseMatrix.get(k, i);
+            }
+            b.add(sum);
+        }
+        return b;
+    }
+
+    public BaseMatrix generateRandomBaseMatrix(final String fileName, int n, double min, double max) {
+        List<List<Double>> list = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            list.add(new ArrayList<>(Collections.nCopies(n, 0.0)));
+        }
+        List<Double> ans = generateList(n, min, max);
+        BaseMatrix baseMatrix = new BaseMatrix(list, new ArrayList<>());
+        Random random = new Random();
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                baseMatrix.set(i, j, (min + (max - min) * random.nextDouble()));
+            }
+        }
+        baseMatrix.setB(computeB(baseMatrix, ans));
+        printMatrix(baseMatrix, ans, fileName);
+        return baseMatrix;
+    }
+
+    public BaseMatrix generateGilbertMatrix(final String fileName, int n, double min, double max) {
+        List<List<Double>> list = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            list.add(new ArrayList<>(Collections.nCopies(n, 0.0)));
+        }
+        List<Double> ans = generateList(n, min, max);
+        BaseMatrix baseMatrix = new BaseMatrix(list, new ArrayList<>());
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                baseMatrix.set(i, j, 1.0 / (i + j + 1));
+            }
+        }
+        baseMatrix.setB(computeB(baseMatrix, ans));
+        printMatrix(baseMatrix, ans, fileName);
+        return baseMatrix;
+    }
+
+    public void printMatrix(BaseMatrix baseMatrix, List<Double> ans, String fileName) {
+        try (BufferedWriter bufferedWriter =  Files.newBufferedWriter(Path.of(directory).resolve(fileName))) {
+            BufferedWriter bufferedWriterAns = Files.newBufferedWriter(Path.of(directory).resolve(fileName + "_answer"));
+            bufferedWriter.write(baseMatrix.toString());
+            bufferedWriterAns.write(ans.stream().map(String::valueOf).collect(Collectors.joining(" ")));
+            bufferedWriterAns.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

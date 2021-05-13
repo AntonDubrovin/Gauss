@@ -161,4 +161,17 @@ public final class BaseMatrix {
         return ans;
     }
 
+    @Override
+    public String toString() {
+        return elements.size() + System.lineSeparator() + elements
+                .stream()
+                .map(list -> list.stream()
+                        .map(String::valueOf)
+                        .collect(Collectors.joining(" ")))
+                .collect(Collectors.joining(System.lineSeparator()))
+                + System.lineSeparator() + b.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(" "));
+    }
+
 }

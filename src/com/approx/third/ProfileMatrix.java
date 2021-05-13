@@ -4,11 +4,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class ProfileMatrix implements Matrix {
+public final class ProfileMatrix implements Matrix {
 
     private final String directoryName;
     private final List<Double> di;
@@ -17,38 +20,33 @@ public class ProfileMatrix implements Matrix {
     private final List<Integer> ia;
     private final List<Double> b;
 
-    private final int size;
 
+    final Function<String, Double> toDouble = Double::parseDouble;
+    final Function<String, Integer> toInt = Integer::parseInt;
 
-    Function<String, Double> toDouble = Double::parseDouble;
-    Function<String, Integer> toInt = Integer::parseInt;
-
-    public ProfileMatrix(String directoryName) {
+    public ProfileMatrix(final String directoryName) {
         this.directoryName = directoryName;
         di = parseToList("di", toDouble);
         al = parseToList("al", toDouble);
         au = parseToList("au", toDouble);
         ia = parseToList("ia", toInt);
         b = parseToList("b", toDouble);
-
-        if (di != null) {
-            size = di.size();
-        } else {
-            size = 0;
-        }
     }
 
+    public int size() {
+        return di.size();
+    }
 
-    private <T> List<T> parseToList(String fileName, Function<String, T> function) {
+    private <T> List<T> parseToList(final String fileName, final Function<String, T> function) {
         try (BufferedReader bufferedReader = Files.newBufferedReader(Path.of(directoryName).resolve(fileName))) {
-            List<String> currentLine = Arrays.asList(bufferedReader.readLine().split(" "));
+            final List<String> currentLine = Arrays.asList(bufferedReader.readLine().split(" "));
             return currentLine.stream().map(function).collect(Collectors.toList());
-        } catch (IOException exception) {
+        } catch (final IOException exception) {
             return null;
         }
     }
 
-    public Double get(int i, int j) {
+    public double get(final int i, final int j) {
         if (i == j) {
             return di.get(i);
         } else if (i > j) {
@@ -58,9 +56,9 @@ public class ProfileMatrix implements Matrix {
         }
     }
 
-    private Double getElement(int i, int j, List<Double> arr) {
-        int prof = ia.get(i + 1) - ia.get(i);
-        int zeros = i - prof;
+    private double getElement(final int i, final int j, final List<Double> arr) {
+        final int prof = ia.get(i + 1) - ia.get(i);
+        final int zeros = i - prof;
         if (j < zeros) {
             return 0.0;
         } else {
@@ -68,34 +66,32 @@ public class ProfileMatrix implements Matrix {
         }
     }
 
-    private boolean setElement(int i, int j, List<Double> arr, Double newValue) {
+    private void setElement(final int i, final int j, final List<Double> arr, final Double newValue) {
         if (i == j) {
             di.set(i, newValue);
-            return true;
+            return;
         }
-        int prof = ia.get(i + 1) - ia.get(i);
-        int zeros = i - prof;
+        final int prof = ia.get(i + 1) - ia.get(i);
+        final int zeros = i - prof;
         if (j >= zeros) {
             arr.set(ia.get(i) + (j - zeros) - 1, newValue);
-            return true;
         }
-        return false;
     }
 
-    public boolean setL(int i, int j, Double newValue) {
-        return setElement(i, j, al, newValue);
+    public void setL(final int i, final int j, final Double newValue) {
+        setElement(i, j, al, newValue);
     }
 
-    public boolean setU(int i, int j, Double newValue) {
-        return setElement(j, i, au, newValue);
+    public void setU(final int i, final int j, final Double newValue) {
+        setElement(j, i, au, newValue);
     }
 
-    public double getL(int i, int j) {
+    public double getL(final int i, final int j) {
         if (j > i) return 0.0;
         return get(i, j);
     }
 
-    public double getU(int i, int j) {
+    public double getU(final int i, final int j) {
         if (i == j) {
             return 1.0;
         } else if (i > j) {
@@ -108,7 +104,7 @@ public class ProfileMatrix implements Matrix {
 
     public void splitMatrix() {
         setL(0, 0, get(0, 0));
-        for (int i = 1; i < size; i++) {
+        for (int i = 1; i < size(); i++) {
             for (int j = 0; j < i; j++) {
                 setL(i, j, getL(i, j) - sum(i, j, j));
                 setU(j, i, (get(j, i) - sum(j, i, j)) / getL(j, j));
@@ -117,7 +113,7 @@ public class ProfileMatrix implements Matrix {
         }
     }
 
-    private Double sum(int i, int j, int border) {
+    private double sum(final int i, final int j, final int border) {
         double result = 0.0;
         for (int k = 0; k < border; k++) {
             result += getL(i, k) * getU(k, j);
@@ -126,9 +122,9 @@ public class ProfileMatrix implements Matrix {
     }
 
     public List<Double> gaussL() {
-        List<Double> ans = new ArrayList<>();
+        final List<Double> ans = new ArrayList<>();
 
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < size(); i++) {
             double sum = 0.0;
             for (int j = 0; j < i; j++) {
                 sum += getL(i, j) * ans.get(j);
@@ -138,13 +134,13 @@ public class ProfileMatrix implements Matrix {
         return ans;
     }
 
-    public List<Double> gaussU(List<Double> y) {
-        List<Double> ans = new ArrayList<>();
+    public List<Double> gaussU(final List<Double> y) {
+        final List<Double> ans = new ArrayList<>();
 
-        for (int i = size - 1; i >= 0; i--) {
+        for (int i = size() - 1; i >= 0; i--) {
             double sum = 0.0;
-            for (int j = size - 1; j > i; j--) {
-                sum += getU(i, j) * ans.get(size-1-j);
+            for (int j = size() - 1; j > i; j--) {
+                sum += getU(i, j) * ans.get(size() - 1 - j);
             }
             ans.add((y.get(i) - sum) / getU(i, i));
         }
@@ -156,6 +152,5 @@ public class ProfileMatrix implements Matrix {
     public List<Double> gauss() {
         return gaussU(gaussL());
     }
-
 
 }

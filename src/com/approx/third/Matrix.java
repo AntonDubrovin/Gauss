@@ -1,7 +1,13 @@
 package com.approx.third;
 
+import java.util.List;
+
 public interface Matrix {
 
-    Double get(int i, int j);
+    double get(int i, int j);
+
+    int size();
+
+    List<Double> gauss();
 
 }

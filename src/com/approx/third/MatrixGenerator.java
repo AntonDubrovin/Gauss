@@ -20,7 +20,7 @@ public final class MatrixGenerator {
     private final String directory;
     private List<Double> b;
 
-    public MatrixGenerator(String directory) {
+    public MatrixGenerator(final String directory) {
         di = new ArrayList<>();
         au = new ArrayList<>();
         al = new ArrayList<>();
@@ -108,11 +108,11 @@ public final class MatrixGenerator {
         writeToFile("b", b);
     }
 
-    private <T> String listToString(List<T> list) {
+    private <T> String listToString(final List<T> list) {
         return list.stream().map(Object::toString).collect(Collectors.joining(" "));
     }
 
-    private <T> void writeToFile(String fileName, List<T> values) {
+    private <T> void writeToFile(final String fileName, final List<T> values) {
         try (BufferedWriter bufferedWriter = Files.newBufferedWriter((Path.of(directory).resolve(fileName)))) {
             bufferedWriter.write(listToString(values));
         } catch (final IOException exception) {

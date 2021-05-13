@@ -4,8 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -16,6 +15,7 @@ public class ProfileMatrix implements Matrix {
     private final List<Double> al;
     private final List<Double> au;
     private final List<Integer> ia;
+    private final List<Double> b;
 
     private final int size;
 
@@ -29,6 +29,7 @@ public class ProfileMatrix implements Matrix {
         al = parseToList("al", toDouble);
         au = parseToList("au", toDouble);
         ia = parseToList("ia", toInt);
+        b = parseToList("b", toDouble);
 
         if (di != null) {
             size = di.size();
@@ -50,7 +51,7 @@ public class ProfileMatrix implements Matrix {
     public Double get(int i, int j) {
         if (i == j) {
             return di.get(i);
-        }else if (i > j) {
+        } else if (i > j) {
             return getElement(i, j, al);
         } else {
             return getElement(j, i, au);
@@ -68,8 +69,8 @@ public class ProfileMatrix implements Matrix {
     }
 
     private boolean setElement(int i, int j, List<Double> arr, Double newValue) {
-        if(i == j){
-            di.set(i,newValue);
+        if (i == j) {
+            di.set(i, newValue);
             return true;
         }
         int prof = ia.get(i + 1) - ia.get(i);
@@ -97,7 +98,7 @@ public class ProfileMatrix implements Matrix {
     public double getU(int i, int j) {
         if (i == j) {
             return 1.0;
-        }else if (i > j) {
+        } else if (i > j) {
             return 0.0;
         } else {
             return get(i, j);
@@ -122,6 +123,34 @@ public class ProfileMatrix implements Matrix {
             result += getL(i, k) * getU(k, j);
         }
         return result;
+    }
+
+    public List<Double> gaussL() {
+        List<Double> ans = new ArrayList<>();
+
+        for (int i = 0; i < size; i++) {
+            double sum = 0.0;
+            for (int j = 0; j < i; j++) {
+                sum += getL(i, j) * ans.get(j);
+            }
+            ans.add((b.get(i) - sum) / getL(i, i));
+        }
+        return ans;
+    }
+
+    public List<Double> gaussU(List<Double> y) {
+        List<Double> ans = new ArrayList<>();
+
+        for (int i = size - 1; i >= 0; i--) {
+            double sum = 0.0;
+            for (int j = size - 1; j > i; j--) {
+                sum += getU(i, j) * ans.get(size-1-j);
+            }
+            ans.add((y.get(i) - sum) / getU(i, i));
+        }
+
+        Collections.reverse(ans);
+        return ans;
     }
 
 

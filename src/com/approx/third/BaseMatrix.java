@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class BaseMatrix implements Matrix{
+public class BaseMatrix implements Matrix {
 
     private final List<List<Double>> elements;
 
@@ -13,7 +13,7 @@ public class BaseMatrix implements Matrix{
     }
 
     public BaseMatrix() {
-        elements = new ArrayList<>();
+        this(new ArrayList<>());
     }
 
     public void add(List<String> elements) {

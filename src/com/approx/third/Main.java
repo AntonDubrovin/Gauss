@@ -1,5 +1,8 @@
 package com.approx.third;
 
+
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 
 public class Main {
@@ -17,7 +20,7 @@ public class Main {
 
     }
 
-    public static void show(final List<Double> array) {
+    public static void show(final @NotNull List<Double> array) {
         for (Double current : array) {
             System.out.print(current + " ");
         }

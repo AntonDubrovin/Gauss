@@ -1,5 +1,7 @@
 package com.approx.third;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,7 +13,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public final class ProfileMatrix implements Matrix {
+public final class ProfileMatrix {
 
     private final String directoryName;
     private final List<Double> di;
@@ -37,12 +39,12 @@ public final class ProfileMatrix implements Matrix {
         return di.size();
     }
 
-    private <T> List<T> parseToList(final String fileName, final Function<String, T> function) {
+    private <T> List<T> parseToList(final @NotNull String fileName, final Function<String, T> function) {
         try (BufferedReader bufferedReader = Files.newBufferedReader(Path.of(directoryName).resolve(fileName))) {
             final List<String> currentLine = Arrays.asList(bufferedReader.readLine().split(" "));
             return currentLine.stream().map(function).collect(Collectors.toList());
-        } catch (final IOException exception) {
-            return null;
+        } catch (final @NotNull IOException exception) {
+            return new ArrayList<>();
         }
     }
 
@@ -56,7 +58,7 @@ public final class ProfileMatrix implements Matrix {
         }
     }
 
-    private double getElement(final int i, final int j, final List<Double> arr) {
+    private double getElement(final int i, final int j, final @NotNull List<Double> arr) {
         final int prof = ia.get(i + 1) - ia.get(i);
         final int zeros = i - prof;
         if (j < zeros) {
@@ -66,7 +68,7 @@ public final class ProfileMatrix implements Matrix {
         }
     }
 
-    private void setElement(final int i, final int j, final List<Double> arr, final Double newValue) {
+    private void setElement(final int i, final int j, final @NotNull List<Double> arr, final Double newValue) {
         if (i == j) {
             di.set(i, newValue);
             return;
@@ -121,7 +123,7 @@ public final class ProfileMatrix implements Matrix {
         return result;
     }
 
-    public List<Double> gaussL() {
+    public @NotNull List<Double> gaussL() {
         final List<Double> ans = new ArrayList<>();
 
         for (int i = 0; i < size(); i++) {
@@ -134,7 +136,7 @@ public final class ProfileMatrix implements Matrix {
         return ans;
     }
 
-    public List<Double> gaussU(final List<Double> y) {
+    public @NotNull List<Double> gaussU(final @NotNull List<Double> y) {
         final List<Double> ans = new ArrayList<>();
 
         for (int i = size() - 1; i >= 0; i--) {
@@ -149,7 +151,7 @@ public final class ProfileMatrix implements Matrix {
         return ans;
     }
 
-    public List<Double> gauss() {
+    public @NotNull List<Double> gauss() {
         return gaussU(gaussL());
     }
 

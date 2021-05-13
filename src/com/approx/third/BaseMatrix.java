@@ -1,9 +1,11 @@
 package com.approx.third;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
-public final class BaseMatrix implements Matrix {
+public final class BaseMatrix {
 
     private final List<List<Double>> elements;
     private List<Double> b;
@@ -21,7 +23,7 @@ public final class BaseMatrix implements Matrix {
         return elements.size();
     }
 
-    public void add(final List<String> elements) {
+    public void add(final @NotNull List<String> elements) {
         this.elements.add(elements.stream()
                 .map(Double::parseDouble)
                 .collect(Collectors.toList()));
@@ -39,13 +41,13 @@ public final class BaseMatrix implements Matrix {
         elements.get(i).set(j, element);
     }
 
-    private void fillMap(final Map<Integer, Integer> mp) {
+    private void fillMap(final @NotNull Map<Integer, Integer> mp) {
         for (int i = 0; i < elements.size(); i++) {
             mp.put(i, i);
         }
     }
 
-    private void remap(final Map<Integer, Integer> mp, final int from, final int to) {
+    private void remap(final @NotNull Map<Integer, Integer> mp, final int from, final int to) {
         int fromValue = mp.get(from);
         int toValue = mp.get(to);
         mp.put(from, toValue);
@@ -64,7 +66,7 @@ public final class BaseMatrix implements Matrix {
         }
     }
 
-    public List<Double> gauss() {
+    public @NotNull List<Double> gauss() {
         final Map<Integer, Integer> mp = new HashMap<>();
         final List<Double> ans = new ArrayList<>();
         fillMap(mp);

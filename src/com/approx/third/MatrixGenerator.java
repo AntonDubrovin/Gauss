@@ -1,5 +1,7 @@
 package com.approx.third;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -13,14 +15,14 @@ import java.util.stream.Collectors;
 
 public final class MatrixGenerator {
 
-    private final List<Double> di;
-    private final List<Double> al;
-    private final List<Double> au;
-    private final List<Integer> ia;
-    private final String directory;
+    private final @NotNull List<Double> di;
+    private final @NotNull List<Double> al;
+    private final @NotNull List<Double> au;
+    private final @NotNull List<Integer> ia;
+    private final @NotNull String directory;
     private List<Double> b;
 
-    public MatrixGenerator(final String directory) {
+    public MatrixGenerator(final @NotNull String directory) {
         di = new ArrayList<>();
         au = new ArrayList<>();
         al = new ArrayList<>();
@@ -31,17 +33,17 @@ public final class MatrixGenerator {
         createDirectory(directory);
     }
 
-    private void createDirectory(final String directory) {
+    private void createDirectory(final @NotNull String directory) {
         if (!Files.exists(Path.of(directory))) {
             try {
                 Files.createDirectory(Paths.get(directory));
-            } catch (final IOException exception) {
+            } catch (final @NotNull IOException exception) {
                 exception.printStackTrace();
             }
         }
     }
 
-    public BaseMatrix parseBaseMatrix(final String fileName) {
+    public @NotNull BaseMatrix parseBaseMatrix(final String fileName) {
         BaseMatrix baseMatrix = new BaseMatrix();
         try (BufferedReader bufferedReader = Files.newBufferedReader(Path.of(fileName))) {
             final int matrixSize = Integer.parseInt(bufferedReader.readLine());
@@ -49,21 +51,24 @@ public final class MatrixGenerator {
                 List<String> currentLine = Arrays.asList(bufferedReader.readLine().split(" "));
                 baseMatrix.add(currentLine);
             }
-            baseMatrix.setB(Arrays.stream(bufferedReader.readLine().split(" ")).map(Double::parseDouble).collect(Collectors.toList()));
+            baseMatrix.setB(parseB(bufferedReader));
             return baseMatrix;
-        } catch (final IOException exception) {
+        } catch (final @NotNull IOException exception) {
             return new BaseMatrix();
         }
     }
 
+    public List<Double> parseB(final BufferedReader bufferedReader) throws IOException {
+        return Arrays.stream(bufferedReader.readLine().split(" ")).map(Double::parseDouble).collect(Collectors.toList());
+    }
 
     public void parseProfileMatrix(final String fileName) {
-        BaseMatrix baseMatrix = new BaseMatrix();
+        final BaseMatrix baseMatrix = new BaseMatrix();
         ia.add(1);
         try (BufferedReader bufferedReader = Files.newBufferedReader(Path.of(fileName))) {
             final int matrixSize = Integer.parseInt(bufferedReader.readLine());
             for (int i = 0; i < matrixSize; i++) {
-                List<String> currentLine = Arrays.asList(bufferedReader.readLine().split(" "));
+                final List<String> currentLine = Arrays.asList(bufferedReader.readLine().split(" "));
                 baseMatrix.add(currentLine);
                 di.add(Double.parseDouble(currentLine.get(i)));
                 int index = -1;
@@ -92,10 +97,10 @@ public final class MatrixGenerator {
                 }
             }
 
-            b = Arrays.stream(bufferedReader.readLine().split(" ")).map(Double::parseDouble).collect(Collectors.toList());
+            b = parseB(bufferedReader);
 
             out();
-        } catch (final IOException exception) {
+        } catch (final @NotNull IOException exception) {
             exception.printStackTrace();
         }
     }
@@ -108,14 +113,14 @@ public final class MatrixGenerator {
         writeToFile("b", b);
     }
 
-    private <T> String listToString(final List<T> list) {
+    private <T> String listToString(final @NotNull List<T> list) {
         return list.stream().map(Object::toString).collect(Collectors.joining(" "));
     }
 
-    private <T> void writeToFile(final String fileName, final List<T> values) {
+    private <T> void writeToFile(final @NotNull String fileName, final @NotNull List<T> values) {
         try (BufferedWriter bufferedWriter = Files.newBufferedWriter((Path.of(directory).resolve(fileName)))) {
             bufferedWriter.write(listToString(values));
-        } catch (final IOException exception) {
+        } catch (final @NotNull IOException exception) {
             exception.printStackTrace();
         }
     }

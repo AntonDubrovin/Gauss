@@ -13,13 +13,34 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Генератор матриц
+ */
 public final class MatrixGenerator {
 
+    /**
+     * Вектор значений диоганальных элементов
+     */
     private final @NotNull List<Double> di;
+    /**
+     * Значения ненулевых элементов профильной матрицы по строкам
+     */
     private final @NotNull List<Double> al;
+    /**
+     * Значения ненулевых элементов профильной матрицы по столбцам
+     */
     private final @NotNull List<Double> au;
+    /**
+     * Массив профилей матрицы
+     */
     private final @NotNull List<Integer> ia;
+    /**
+     * Имя дериктории в которую необходимо генерировать значения
+     */
     private final @NotNull String directory;
+    /**
+     * Вектор правой части
+     */
     private List<Double> b;
 
     public MatrixGenerator(final @NotNull String directory) {
@@ -33,6 +54,11 @@ public final class MatrixGenerator {
         createDirectory(directory);
     }
 
+    /**
+     * Создаёт директории с переданным названием
+     *
+     * @param directory Имя дериктории
+     */
     private void createDirectory(final @NotNull String directory) {
         if (!Files.exists(Path.of(directory))) {
             try {
@@ -43,6 +69,12 @@ public final class MatrixGenerator {
         }
     }
 
+    /**
+     * Парсит матрицу в плотном формате из переданного файла
+     *
+     * @param fileName Имя файла из которого получаются значения
+     * @return Плотную матрицу
+     */
     public @NotNull BaseMatrix parseBaseMatrix(final String fileName) {
         BaseMatrix baseMatrix = new BaseMatrix();
         try (BufferedReader bufferedReader = Files.newBufferedReader(Path.of(fileName))) {
@@ -58,10 +90,22 @@ public final class MatrixGenerator {
         }
     }
 
+    /**
+     * Читает вектор правой части из файла
+     *
+     * @param bufferedReader Класс для чтения из файла
+     * @return Массив правой части
+     * @throws IOException При невозможности прочитать из файла
+     */
     public List<Double> parseB(final BufferedReader bufferedReader) throws IOException {
         return Arrays.stream(bufferedReader.readLine().split(" ")).map(Double::parseDouble).collect(Collectors.toList());
     }
 
+    /**
+     * Генерирует профильную матрицу по переданному файлу
+     *
+     * @param fileName имя файла
+     */
     public void parseProfileMatrix(final String fileName) {
         final BaseMatrix baseMatrix = new BaseMatrix();
         ia.add(1);
@@ -105,6 +149,9 @@ public final class MatrixGenerator {
         }
     }
 
+    /**
+     * Записывает полученные массивы в файлы
+     */
     private void out() {
         writeToFile("di", di);
         writeToFile("al", al);
@@ -113,10 +160,24 @@ public final class MatrixGenerator {
         writeToFile("b", b);
     }
 
+    /**
+     * Генерирует строковое представление переданного массива элементов
+     *
+     * @param list Массив значений типа {@code T}
+     * @param <T>  ЖЕНЕРИГ
+     * @return Строковое представление переданного масссива
+     */
     private <T> String listToString(final @NotNull List<T> list) {
         return list.stream().map(Object::toString).collect(Collectors.joining(" "));
     }
 
+    /**
+     * Запиывает значения элементов массива {@code values} в файл с переданным именем
+     *
+     * @param fileName Имя файла для записи
+     * @param values   Массив элементов
+     * @param <T>      ЖЕНЕРИГ
+     */
     private <T> void writeToFile(final @NotNull String fileName, final @NotNull List<T> values) {
         try (BufferedWriter bufferedWriter = Files.newBufferedWriter((Path.of(directory).resolve(fileName)))) {
             bufferedWriter.write(listToString(values));

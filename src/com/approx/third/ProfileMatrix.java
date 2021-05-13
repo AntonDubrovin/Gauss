@@ -13,18 +13,43 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Класс содержащий профильную матрицу
+ */
 public final class ProfileMatrix {
 
-    private final String directoryName;
-    private final List<Double> di;
-    private final List<Double> al;
-    private final List<Double> au;
-    private final List<Integer> ia;
-    private final List<Double> b;
-
-
+    /**
+     * @see Double#parseDouble(String)
+     */
     final Function<String, Double> toDouble = Double::parseDouble;
+    /**
+     * @see Integer#parseInt(String)
+     */
     final Function<String, Integer> toInt = Integer::parseInt;
+    /**
+     * Имя дериктории, в которой содержатся файлы для текущего тестирования
+     */
+    private final String directoryName;
+    /**
+     * Вектор значений диоганальных элементов
+     */
+    private final List<Double> di;
+    /**
+     * Значения ненулевых элементов профильной матрицы по строкам
+     */
+    private final List<Double> al;
+    /**
+     * Значения ненулевых элементов профильной матрицы по столбцам
+     */
+    private final List<Double> au;
+    /**
+     * Массив профилей матрицы
+     */
+    private final List<Integer> ia;
+    /**
+     * Вектор правой части
+     */
+    private final List<Double> b;
 
     public ProfileMatrix(final String directoryName) {
         this.directoryName = directoryName;
@@ -35,10 +60,21 @@ public final class ProfileMatrix {
         b = parseToList("b", toDouble);
     }
 
+    /**
+     * @return Размерность профильной матрицы
+     */
     public int size() {
         return di.size();
     }
 
+    /**
+     * Читает массив из файла, и преобразует его в {@code List<T>}
+     *
+     * @param fileName Имя файла, в котором содежится массив
+     * @param function Функция преобразующая строку в {@code List<T>}
+     * @param <T>      ЖЕНЕРИГ
+     * @return {@code List<T>}
+     */
     private <T> List<T> parseToList(final @NotNull String fileName, final Function<String, T> function) {
         try (BufferedReader bufferedReader = Files.newBufferedReader(Path.of(directoryName).resolve(fileName))) {
             final List<String> currentLine = Arrays.asList(bufferedReader.readLine().split(" "));
@@ -48,6 +84,14 @@ public final class ProfileMatrix {
         }
     }
 
+    /**
+     * Получает значение матрицы по переданным координатам
+     *
+     * @param i Строка матрицы
+     * @param j Столбец матрицы
+     * @return Значение матрицы в строке {@code i}, столбце {@code j}
+     * @see #getElement(int, int, List)
+     */
     public double get(final int i, final int j) {
         if (i == j) {
             return di.get(i);
@@ -58,6 +102,14 @@ public final class ProfileMatrix {
         }
     }
 
+    /**
+     * Получает значение элемента профильной матрицы по координатам исходной
+     *
+     * @param i   Строка матрицы
+     * @param j   Столбец матрицы
+     * @param arr Массив строковых(столбцовых) значений профильной матрицы
+     * @return Значение по переданным координатам
+     */
     private double getElement(final int i, final int j, final @NotNull List<Double> arr) {
         final int prof = ia.get(i + 1) - ia.get(i);
         final int zeros = i - prof;
@@ -68,6 +120,14 @@ public final class ProfileMatrix {
         }
     }
 
+    /**
+     * Устанавливает значение элемента профильной матрицы по координатам исходной
+     *
+     * @param i        Строка матрицы
+     * @param j        Столбец матрицы
+     * @param arr      Массив строковых(столбцовых) значений профильной матрицы
+     * @param newValue Новое значение
+     */
     private void setElement(final int i, final int j, final @NotNull List<Double> arr, final Double newValue) {
         if (i == j) {
             di.set(i, newValue);
@@ -80,19 +140,47 @@ public final class ProfileMatrix {
         }
     }
 
+    /**
+     * Устанавливает значение элемента матрицы L по переданным координатам
+     *
+     * @param i        Строка матрицы L
+     * @param j        Столбец матрицы L
+     * @param newValue Новое значение
+     */
     public void setL(final int i, final int j, final Double newValue) {
         setElement(i, j, al, newValue);
     }
 
+    /**
+     * Устанавливает значение элемента матрицы U по переданным координатам
+     *
+     * @param i        Строка матрицы U
+     * @param j        Столбец матрицы U
+     * @param newValue Новое значение
+     */
     public void setU(final int i, final int j, final Double newValue) {
         setElement(j, i, au, newValue);
     }
 
+    /**
+     * Получает значение элемента матрицы L по переданным координатам
+     *
+     * @param i Строка матрицы L
+     * @param j Столбец матрицы L
+     * @return Значение элемента матрицы L по переданным координатам
+     */
     public double getL(final int i, final int j) {
         if (j > i) return 0.0;
         return get(i, j);
     }
 
+    /**
+     * Получает значение элемента матрицы U по переданным координатам
+     *
+     * @param i Строка матрицы U
+     * @param j Столбец матрицы U
+     * @return Значение элемента матрицы U по переданным координатам
+     */
     public double getU(final int i, final int j) {
         if (i == j) {
             return 1.0;
@@ -103,7 +191,9 @@ public final class ProfileMatrix {
         }
     }
 
-
+    /**
+     * Деление профильной матрицы на две треугольные матрицы L и U
+     */
     public void splitMatrix() {
         setL(0, 0, get(0, 0));
         for (int i = 1; i < size(); i++) {
@@ -123,6 +213,11 @@ public final class ProfileMatrix {
         return result;
     }
 
+    /**
+     * Прямой ход метода Гаусса для матрицы L
+     *
+     * @return Вектор решений
+     */
     public @NotNull List<Double> gaussL() {
         final List<Double> ans = new ArrayList<>();
 
@@ -136,6 +231,11 @@ public final class ProfileMatrix {
         return ans;
     }
 
+    /**
+     * Обратный ход метода Гаусса для матрицы U
+     *
+     * @return Вектор решений
+     */
     public @NotNull List<Double> gaussU(final @NotNull List<Double> y) {
         final List<Double> ans = new ArrayList<>();
 
@@ -151,6 +251,11 @@ public final class ProfileMatrix {
         return ans;
     }
 
+    /**
+     * Метод Гаусса для разделённой матрицы
+     *
+     * @return Вектор решений
+     */
     public @NotNull List<Double> gauss() {
         return gaussU(gaussL());
     }

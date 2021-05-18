@@ -79,7 +79,7 @@ public final class ProfileMatrix {
         try (BufferedReader bufferedReader = Files.newBufferedReader(Path.of(directoryName).resolve(fileName))) {
             final List<String> currentLine = Arrays.asList(bufferedReader.readLine().split(" "));
             return currentLine.stream().map(function).collect(Collectors.toList());
-        } catch (final @NotNull IOException exception) {
+        } catch (final @NotNull IOException ignored) {
             return new ArrayList<>();
         }
     }

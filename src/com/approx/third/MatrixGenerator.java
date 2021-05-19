@@ -90,6 +90,53 @@ public final class MatrixGenerator {
         return b;
     }
 
+    public void computeB(List<Double> ans) {
+        List<String> p = new ArrayList<>(Collections.nCopies(ans.size(),""));
+        for (int i = 0; i + 1 < ia.size(); i++) {
+            for (int j = ia.get(i); j < ia.get(i + 1); j++) {
+                final int prof = ia.get(i + 1) - ia.get(i);
+                final int zeros = i - prof;
+                final int k = (j + zeros - ia.get(i));
+                b.set(i, b.get(i) + ans.get(k) * al.get(j));
+                b.set(k , b.get(k) + ans.get(i) * au.get(j));
+            }
+            b.set(i, b.get(i) + ans.get(i) * di.get(i));
+        }
+    }
+
+    public void generateProfileMatrix(int k, int n) {
+        final int MOD = 5;
+        final int MAX_DISTANCE_FROM_DIAGONAL = 5;
+        ia.add(0);
+        Random random = new Random();
+        long sum = 0;
+        for (int i = 0; i < n; i++) {
+            int index = Integer.max((random.nextInt() % (i + 1) + (i + 1)) % (i + 1), i - MAX_DISTANCE_FROM_DIAGONAL);
+            ia.add(ia.get(i) + i - index);
+            for (int j = index; j < i; j++) {
+                int ran = (random.nextInt() % MOD + MOD) % MOD;
+                al.add((double)-ran);
+                sum += ran;
+            }
+            for (int j = index; j < i; j++) {
+                int ran = (random.nextInt() % MOD + MOD) % MOD;
+                au.add((double)-ran);
+                sum += ran;
+            }
+        }
+        List<Double> ans = new ArrayList<>(n);
+        for (int i = 1; i <= n; i++) {
+            ans.add((double)i);
+            b.add(0.0);
+        }
+        di.add((double)sum + Math.pow(10.0, -k));
+        for (int i = 1; i < n; i++) {
+            di.add((double)sum);
+        }
+        computeB(ans);
+        out();
+    }
+
     public BaseMatrix generateRandomBaseMatrix(final String fileName, int n, double min, double max) {
         List<List<Double>> list = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
@@ -175,7 +222,7 @@ public final class MatrixGenerator {
      */
     public void parseProfileMatrix(final String fileName) {
         final BaseMatrix baseMatrix = new BaseMatrix();
-        ia.add(1);
+        ia.add(0);
         try (BufferedReader bufferedReader = Files.newBufferedReader(Path.of(fileName))) {
             final int matrixSize = Integer.parseInt(bufferedReader.readLine());
             for (int i = 0; i < matrixSize; i++) {

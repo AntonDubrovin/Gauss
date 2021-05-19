@@ -18,14 +18,15 @@ import java.util.stream.Collectors;
  */
 public final class ProfileMatrix {
 
+
     /**
-     * @see Double#parseDouble(String)
+     * Переменная хранящая число итераций метода LU разложения
      */
+    private int cnt = 0;
+
     final Function<String, Double> toDouble = Double::parseDouble;
-    /**
-     * @see Integer#parseInt(String)
-     */
     final Function<String, Integer> toInt = Integer::parseInt;
+
     /**
      * Имя дериктории, в которой содержатся файлы для текущего тестирования
      */
@@ -116,7 +117,7 @@ public final class ProfileMatrix {
         if (j < zeros) {
             return 0.0;
         } else {
-            return arr.get(ia.get(i) + (j - zeros));
+            return arr.get(ia.get(i) + (j - zeros) - 1);
         }
     }
 
@@ -136,7 +137,7 @@ public final class ProfileMatrix {
         final int prof = ia.get(i + 1) - ia.get(i);
         final int zeros = i - prof;
         if (j >= zeros) {
-            arr.set(ia.get(i) + (j - zeros), newValue);
+            arr.set(ia.get(i) + (j - zeros) - 1, newValue);
         }
     }
 
@@ -200,14 +201,24 @@ public final class ProfileMatrix {
             for (int j = 0; j < i; j++) {
                 setL(i, j, getL(i, j) - sum(i, j, j));
                 setU(j, i, (get(j, i) - sum(j, i, j)) / getL(j, j));
+                cnt++;
             }
             setL(i, i, get(i, i) - sum(i, i, i));
         }
     }
 
+    /**
+     * Получение суммы элементов матрицы вида {@code L(i,k) * U(k,j)} для всех {@code k} в заданных границах
+     *
+     * @param i      номер строки
+     * @param j      номер столбца
+     * @param border верхняя граница суммирования
+     * @return сумму элементов
+     */
     private double sum(final int i, final int j, final int border) {
         double result = 0.0;
         for (int k = 0; k < border; k++) {
+            cnt++;
             result += getL(i, k) * getU(k, j);
         }
         return result;
@@ -224,8 +235,10 @@ public final class ProfileMatrix {
         for (int i = 0; i < size(); i++) {
             double sum = 0.0;
             for (int j = 0; j < i; j++) {
+                cnt++;
                 sum += getL(i, j) * ans.get(j);
             }
+            cnt++;
             ans.add((b.get(i) - sum) / getL(i, i));
         }
         return ans;
@@ -234,17 +247,20 @@ public final class ProfileMatrix {
     /**
      * Обратный ход метода Гаусса для матрицы U
      *
+     * @param lResult Вектор результата полученного для матрицы L
      * @return Вектор решений
      */
-    public @NotNull List<Double> gaussU(final @NotNull List<Double> y) {
+    public @NotNull List<Double> gaussU(final @NotNull List<Double> lResult) {
         final List<Double> ans = new ArrayList<>();
 
         for (int i = size() - 1; i >= 0; i--) {
             double sum = 0.0;
             for (int j = size() - 1; j > i; j--) {
+                cnt++;
                 sum += getU(i, j) * ans.get(size() - 1 - j);
             }
-            ans.add((y.get(i) - sum) / getU(i, i));
+            cnt++;
+            ans.add((lResult.get(i) - sum) / getU(i, i));
         }
 
         Collections.reverse(ans);
@@ -258,6 +274,15 @@ public final class ProfileMatrix {
      */
     public @NotNull List<Double> gauss() {
         return gaussU(gaussL());
+    }
+
+    /**
+     * Получение числа умножений/делений производимых алгоритмом LU-разложения
+     *
+     * @return число действий
+     */
+    public int getCount() {
+        return cnt;
     }
 
 }

@@ -10,6 +10,12 @@ import java.util.stream.Collectors;
  */
 public final class BaseMatrix {
 
+
+    /**
+     * Переменная хранящая число итераций алгоритм Гаусса
+     */
+    private int cnt = 0;
+
     /**
      * Двумерный List элементов матрицы
      */
@@ -110,15 +116,18 @@ public final class BaseMatrix {
      * @param diag   Номер столбца, элемент которого приводится к 0
      */
     private void sub(final int first, final int second, final int diag) {
-        if (get(second, diag) == 0) {
+        if (Math.abs(get(second, diag)) <= 1e-20) {
             return;
         }
+        cnt++;
         final double mul = get(second, diag) / get(first, diag);
+        cnt++;
         b.set(second, b.get(second) - b.get(first) * mul);
         for (int i = 0; i < size(); i++) {
             if (i == diag) {
                 set(second, i, 0.0);
             } else {
+                cnt++;
                 double newValue = get(second, i) - get(first, i) * mul;
                 set(second, i, newValue);
             }
@@ -154,8 +163,10 @@ public final class BaseMatrix {
         for (int i = size() - 1; i >= 0; i--) {
             double sum = 0.0;
             for (int j = size() - 1; j > i; j--) {
+                cnt++;
                 sum += get(mp.get(i), j) * ans.get(size() - 1 - j);
             }
+            cnt++;
             ans.add((b.get(mp.get(i)) - sum) / get(mp.get(i), i));
         }
 
@@ -179,6 +190,15 @@ public final class BaseMatrix {
                 + System.lineSeparator() + b.stream()
                 .map(String::valueOf)
                 .collect(Collectors.joining(" "));
+    }
+
+    /**
+     * Получение числа итераций, проделанных алгоритмом Гаусса
+     *
+     * @return число итераций
+     */
+    public int getCount() {
+        return cnt;
     }
 
 }

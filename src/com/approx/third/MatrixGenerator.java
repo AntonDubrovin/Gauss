@@ -104,48 +104,59 @@ public final class MatrixGenerator {
         return b;
     }
 
-    public void computeB(List<Double> ans) {
-        List<String> p = new ArrayList<>(Collections.nCopies(ans.size(),""));
+    /**
+     * Устанавливвает значение вектора правой части по переданному вектору решения
+     *
+     * @param ans Вектор решений
+     */
+    public void computeB(final @NotNull List<Double> ans) {
         for (int i = 0; i + 1 < ia.size(); i++) {
             for (int j = ia.get(i); j < ia.get(i + 1); j++) {
                 final int prof = ia.get(i + 1) - ia.get(i);
                 final int zeros = i - prof;
                 final int k = (j + zeros - ia.get(i));
                 b.set(i, b.get(i) + ans.get(k) * al.get(j));
-                b.set(k , b.get(k) + ans.get(i) * au.get(j));
+                b.set(k, b.get(k) + ans.get(i) * au.get(j));
             }
             b.set(i, b.get(i) + ans.get(i) * di.get(i));
         }
     }
 
-    public void generateProfileMatrix(int k, int n) {
+    /**
+     * Генерирует Гильбертову матрицу в профильном формате и записывает её в файл
+     *
+     * @param k параметр Гильбертовой матрицы
+     * @param n Размерность матрицы
+     * @see #out()
+     */
+    public void generateProfileGilbertMatrix(final int k, final int n) {
         final int MOD = 5;
         final int MAX_DISTANCE_FROM_DIAGONAL = 5;
         ia.add(0);
-        Random random = new Random();
+        final Random random = new Random();
         long sum = 0;
         for (int i = 0; i < n; i++) {
             int index = Integer.max((random.nextInt() % (i + 1) + (i + 1)) % (i + 1), i - MAX_DISTANCE_FROM_DIAGONAL);
             ia.add(ia.get(i) + i - index);
             for (int j = index; j < i; j++) {
                 int ran = (random.nextInt() % MOD + MOD) % MOD;
-                al.add((double)-ran);
+                al.add((double) -ran);
                 sum += ran;
             }
             for (int j = index; j < i; j++) {
                 int ran = (random.nextInt() % MOD + MOD) % MOD;
-                au.add((double)-ran);
+                au.add((double) -ran);
                 sum += ran;
             }
         }
         List<Double> ans = new ArrayList<>(n);
         for (int i = 1; i <= n; i++) {
-            ans.add((double)i);
+            ans.add((double) i);
             b.add(0.0);
         }
-        di.add((double)sum + Math.pow(10.0, -k));
+        di.add((double) sum + Math.pow(10.0, -k));
         for (int i = 1; i < n; i++) {
-            di.add((double)sum);
+            di.add((double) sum);
         }
         computeB(ans);
         out();
@@ -183,16 +194,16 @@ public final class MatrixGenerator {
      *
      * @param fileName Имя файла
      * @param n        Размерность матрицы
-     * @param min      Минимальное значение
-     * @param max      Максимальное значение
-     * @return Гильбертову матрицу в плотном формате
      */
-    public @NotNull BaseMatrix generateGilbertMatrix(final @NotNull String fileName, int n, double min, double max) {
+    public void generateGilbertMatrix(final @NotNull String fileName, final int n) {
         final List<List<Double>> list = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
             list.add(new ArrayList<>(Collections.nCopies(n, 0.0)));
         }
-        final List<Double> ans = generateList(n, min, max);
+        final List<Double> ans = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            ans.add(i + 1.0);
+        }
         final BaseMatrix baseMatrix = new BaseMatrix(list, new ArrayList<>());
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
@@ -201,7 +212,6 @@ public final class MatrixGenerator {
         }
         baseMatrix.setB(computeB(baseMatrix, ans));
         printMatrix(baseMatrix, ans, fileName);
-        return baseMatrix;
     }
 
     /**
@@ -211,7 +221,9 @@ public final class MatrixGenerator {
      * @param ans        Вектор решений
      * @param fileName   Имя файла
      */
-    public void printMatrix(final @NotNull BaseMatrix baseMatrix, final @NotNull List<Double> ans, final @NotNull String fileName) {
+    public void printMatrix(final @NotNull BaseMatrix baseMatrix,
+                            final @NotNull List<Double> ans,
+                            final @NotNull String fileName) {
         try (final BufferedWriter bufferedWriter = Files.newBufferedWriter(Path.of(directory).resolve(fileName))) {
             final BufferedWriter bufferedWriterAns = Files.newBufferedWriter(Path.of(directory).resolve(fileName + "_answer"));
             bufferedWriter.write(baseMatrix.toString());
@@ -219,27 +231,6 @@ public final class MatrixGenerator {
             bufferedWriterAns.close();
         } catch (final @NotNull IOException exception) {
             System.err.println(exception.getMessage());
-        }
-    }
-
-    /**
-     * Парсит матрицу в плотном формате из переданного файла
-     *
-     * @param fileName Имя файла из которого получаются значения
-     * @return Плотную матрицу
-     */
-    public @NotNull BaseMatrix parseBaseMatrix(final String fileName) {
-        final BaseMatrix baseMatrix = new BaseMatrix();
-        try (BufferedReader bufferedReader = Files.newBufferedReader(Path.of(fileName))) {
-            final int matrixSize = Integer.parseInt(bufferedReader.readLine());
-            for (int i = 0; i < matrixSize; i++) {
-                List<String> currentLine = Arrays.asList(bufferedReader.readLine().split(" "));
-                baseMatrix.add(currentLine);
-            }
-            baseMatrix.setB(parseB(bufferedReader));
-            return baseMatrix;
-        } catch (final @NotNull IOException ignored) {
-            return new BaseMatrix();
         }
     }
 
@@ -261,7 +252,7 @@ public final class MatrixGenerator {
      */
     public void parseProfileMatrix(final String fileName) {
         final BaseMatrix baseMatrix = new BaseMatrix();
-        ia.add(0);
+        ia.add(1);
         try (BufferedReader bufferedReader = Files.newBufferedReader(Path.of(fileName))) {
             final int matrixSize = Integer.parseInt(bufferedReader.readLine());
             for (int i = 0; i < matrixSize; i++) {
@@ -331,7 +322,8 @@ public final class MatrixGenerator {
      * @param values   Массив элементов
      * @param <T>      ЖЕНЕРИГ
      */
-    private <T> void writeToFile(final @NotNull String fileName, final @NotNull List<T> values) {
+    private <T> void writeToFile(final @NotNull String fileName,
+                                 final @NotNull List<T> values) {
         try (BufferedWriter bufferedWriter = Files.newBufferedWriter((Path.of(directory).resolve(fileName)))) {
             bufferedWriter.write(listToString(values));
         } catch (final @NotNull IOException exception) {

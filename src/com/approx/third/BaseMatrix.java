@@ -116,8 +116,12 @@ public final class BaseMatrix {
         final double mul = get(second, diag) / get(first, diag);
         b.set(second, b.get(second) - b.get(first) * mul);
         for (int i = 0; i < size(); i++) {
-            double newValue = get(second, i) - get(first, i) * mul;
-            set(second, i, newValue);
+            if (i == diag) {
+                set(second, i, 0.0);
+            } else {
+                double newValue = get(second, i) - get(first, i) * mul;
+                set(second, i, newValue);
+            }
         }
     }
 
@@ -130,22 +134,20 @@ public final class BaseMatrix {
         final Map<Integer, Integer> mp = new HashMap<>();
         final List<Double> ans = new ArrayList<>();
         fillMap(mp);
-        for (int j = 0; j < elements.size() - 1; j++) {
+        for (int j = 0; j < elements.size(); j++) {
             final int jj = mp.get(j);
-            double max = get(jj, j);
+            double max = Math.abs(get(jj, j));
             int index = j;
-            for (int i = j; i < elements.size(); i++) {
-                double value = get(mp.get(i), j);
-                if (value > max) {
+            for (int i = j + 1; i < elements.size(); i++) {
+                double value = Math.abs(get(mp.get(i), j));
+                if (value >= max) {
                     max = value;
                     index = i;
                 }
             }
             remap(mp, j, index);
-            for (int i = j; i < size(); i++) {
-                if (mp.get(i) != index) {
-                    sub(index, mp.get(i), j);
-                }
+            for (int i = j + 1; i < size(); i++) {
+                sub(mp.get(j), mp.get(i), j);
             }
         }
 
@@ -161,8 +163,13 @@ public final class BaseMatrix {
         return ans;
     }
 
+    /**
+     * Строковое представление элементов матрицы и вектора правой части
+     *
+     * @return Строку содержащую строковое представление матрицы
+     */
     @Override
-    public String toString() {
+    public @NotNull String toString() {
         return elements.size() + System.lineSeparator() + elements
                 .stream()
                 .map(list -> list.stream()

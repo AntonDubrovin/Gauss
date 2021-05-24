@@ -82,6 +82,7 @@ public final class MatrixGenerator {
         for (int i = 0; i < n; i++) {
             ans.add(min + (max - min) * random.nextDouble());
         }
+        System.out.println("Size is " + ans.size() + " expected " + n);
         return ans;
     }
 
@@ -98,6 +99,18 @@ public final class MatrixGenerator {
             double sum = 0;
             for (int i = 0; i < baseMatrix.size(); i++) {
                 sum += ans.get(i) * baseMatrix.get(k, i);
+            }
+            b.add(sum);
+        }
+        return b;
+    }
+
+    public @NotNull List<Double> computeB(final @NotNull List<List<Double>> baseMatrix, final @NotNull List<Double> ans) {
+        final List<Double> b = new ArrayList<>();
+        for (int k = 0; k < baseMatrix.size(); k++) {
+            double sum = 0.0;
+            for (int i = 0; i < baseMatrix.size(); i++) {
+                sum += ans.get(i) * baseMatrix.get(k).get(i);
             }
             b.add(sum);
         }
@@ -329,5 +342,44 @@ public final class MatrixGenerator {
         } catch (final @NotNull IOException exception) {
             System.err.println(exception.getMessage());
         }
+    }
+
+
+    public SparseMatrix generateSparseMatrix(final int size) {
+        final List<List<Double>> list = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            list.add(new ArrayList<>(Collections.nCopies(size, 0.0)));
+        }
+
+        final Random random = new Random();
+        for (int i = 0; i < size; i++) {
+            final double currentValue = random.nextDouble() * 100.0 - 50.0;
+            list.get(i).set(i, currentValue);
+        }
+        for (int i = 0; 2 * i < Math.sqrt(size) * size; i++) {
+            final int currentX = random.nextInt(size);
+            final int currentY = random.nextInt(size);
+            final double currentValue = random.nextDouble() * 100.0 - 50.0;
+            list.get(currentX).set(currentY, currentValue);
+            list.get(currentY).set(currentX, currentValue);
+        }
+
+        final List<Double> xes = generateList(size, -size, size);
+        final List<Double> b = computeB(list, xes);
+        System.out.println("GENERATED MATRIX");
+        for(int i=0;i<size;i++){
+            for(int j=0;j<size;j++){
+                System.out.print(list.get(i).get(j) + " ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+        System.out.println("GENERATED XES");
+        for (Double x : xes) {
+            System.out.print(x + " ");
+        }
+
+        return new SparseMatrix(list, b);
+
     }
 }

@@ -21,9 +21,10 @@ public class Tester {
      * @param args ignored
      */
     public static void main(final String[] args) {
-        second();
-        third();
-        fourth();
+        //second();
+        //third();
+        //fourth();
+        fifth();
     }
 
     /**
@@ -75,6 +76,27 @@ public class Tester {
             final List<Double> baseAnswer = baseMatrix.gauss();
             final List<Double> profileAnswer = profileMatrix.gauss();
             compare(baseAnswer, profileAnswer, fileName, baseMatrix.getCount(), profileMatrix.getCount());
+        }
+    }
+
+    private static void fifth() {
+        for (int i = 9; i < 10; i++) {
+            final String fileName = "fifth_try_" + i;
+            final MatrixGenerator matrixGenerator = new MatrixGenerator(fileName);
+            final SparseMatrix sparseMatrix = matrixGenerator.generateSparseMatrix(6);
+            System.out.println("GETTED MATRIX");
+            for (int k = 0; k < 6; k++) {
+                for (int q = 0; q < 6; q++) {
+                    System.out.print(sparseMatrix.get(k,q) + " ");
+                }
+                System.out.println();
+            }
+
+            final List<Double> xes = sparseMatrix.conjugate();
+            System.out.println("SOLVED");
+            for (Double x : xes) {
+                System.out.print(x + " ");
+            }
         }
     }
 

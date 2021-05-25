@@ -37,6 +37,10 @@ public final class MatrixGenerator {
      */
     private final @NotNull String directory;
     /**
+     *
+     */
+    private final List<Integer> ja;
+    /**
      * Вектор правой части
      */
     private List<Double> b;
@@ -47,6 +51,7 @@ public final class MatrixGenerator {
         al = new ArrayList<>();
         ia = new ArrayList<>();
         b = new ArrayList<>();
+        ja = new ArrayList<>();
         this.directory = directory;
 
         createDirectory(directory);
@@ -175,6 +180,46 @@ public final class MatrixGenerator {
         out();
     }
 
+    public void generateSparseDiagonalMatrix(final int n, final int distance, final boolean flag) {
+        final int MOD = 5;
+        ia.add(0);
+        final Random random = new Random();
+        long sum = 0;
+
+        for (int i = 0; i < n; i++) {
+            int index = Integer.max((random.nextInt() % (i + 1) + (i + 1)) % (i + 1), i - distance);
+
+            int zeros = 0;
+            for (int j = index; j < i; j++) {
+                int ran = (random.nextInt() % MOD + MOD) % MOD;
+                if (ran != 0) {
+                    al.add((double) -ran);
+                    au.add((double) -ran);
+                    ja.add(j);
+                    sum += ran * 2;
+                } else {
+                    zeros++;
+                }
+            }
+            ia.add(ia.get(i) + i - index - zeros);
+        }
+        final List<Double> ans = new ArrayList<>(n);
+        for (int i = 1; i <= n; i++) {
+            ans.add((double) i);
+            b.add(0.0);
+        }
+        di.add(((double) sum + 1.0) * (flag ? 1 : -1));
+        for (int i = 1; i < n; i++) {
+            di.add(((double) sum) * (flag ? 1 : -1));
+        }
+        computeBB(ans);
+        out();
+    }
+
+    private void computeBB(final List<Double> ans) {
+        b = multiply(ans);
+    }
+
     /**
      * Генерирует матрицу размерноти {@code n} и векрот решений в пределах от {@code min} до {@code max}
      *
@@ -208,7 +253,7 @@ public final class MatrixGenerator {
      * @param fileName Имя файла
      * @param n        Размерность матрицы
      */
-    public void generateGilbertMatrix(final @NotNull String fileName, final int n) {
+    public BaseMatrix generateGilbertMatrix(final @NotNull String fileName, final int n) {
         final List<List<Double>> list = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
             list.add(new ArrayList<>(Collections.nCopies(n, 0.0)));
@@ -224,7 +269,7 @@ public final class MatrixGenerator {
             }
         }
         baseMatrix.setB(computeB(baseMatrix, ans));
-        printMatrix(baseMatrix, ans, fileName);
+        return baseMatrix;
     }
 
     /**
@@ -315,6 +360,26 @@ public final class MatrixGenerator {
         writeToFile("au", au);
         writeToFile("ia", ia);
         writeToFile("b", b);
+        writeToFile("ja", ja);
+    }
+
+    private List<Double> multiply(final List<Double> other) {
+        int border = 0;
+        final List<Double> res = new ArrayList<>();
+        for (int i = 0; i < other.size(); i++) {
+            res.add(0.0);
+        }
+        for (int i = 0; i < other.size(); i++) {
+            int cnt = ia.get(i + 1) - ia.get(i);
+            res.set(i, res.get(i) + di.get(i) * other.get(i));
+            for (int j = 0; j < cnt; j++) {
+                final int column = ja.get(border + j);
+                res.set(i, res.get(i) + al.get(border + j) * other.get(column));
+                res.set(column, res.get(column) + au.get(border + j) * other.get(i));
+            }
+            border += cnt;
+        }
+        return res;
     }
 
     /**
@@ -367,8 +432,8 @@ public final class MatrixGenerator {
         final List<Double> xes = generateList(size, -size, size);
         final List<Double> b = computeB(list, xes);
         System.out.println("GENERATED MATRIX");
-        for(int i=0;i<size;i++){
-            for(int j=0;j<size;j++){
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
                 System.out.print(list.get(i).get(j) + " ");
             }
             System.out.println();
@@ -380,6 +445,6 @@ public final class MatrixGenerator {
         }
 
         return new SparseMatrix(list, b);
-
     }
+
 }

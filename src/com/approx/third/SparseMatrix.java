@@ -1,21 +1,32 @@
 package com.approx.third;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class SparseMatrix {
 
+    final Function<String, Double> toDouble = Double::parseDouble;
+    final Function<String, Integer> toInt = Integer::parseInt;
 
     private final List<Double> al;
     private final List<Double> au;
     private final List<Double> di;
     private final List<Integer> ia;
     private final List<Integer> ja;
-    private final List<Double> b;
+    public final List<Double> b;
 
+    private String directory;
 
-    public SparseMatrix(List<List<Double>> matrix, List<Double> b) {
+    public SparseMatrix(final List<List<Double>> matrix, final List<Double> b) {
         this.b = b;
         this.di = evaluateDiagonal(matrix);
         this.ia = new ArrayList<>();
@@ -26,6 +37,30 @@ public class SparseMatrix {
         this.al = all;
         this.au = auu;
         this.ja = jaa;
+    }
+
+    public SparseMatrix(final List<Double> al,
+                        final List<Double> au,
+                        final List<Double> di,
+                        final List<Integer> ja,
+                        final List<Integer> ia,
+                        final List<Double> b) {
+        this.al = al;
+        this.au = au;
+        this.di = di;
+        this.ja = ja;
+        this.ia = ia;
+        this.b = b;
+    }
+
+    public SparseMatrix(final String directory) {
+        this.directory = directory;
+        di = parseToList("di", toDouble);
+        al = parseToList("al", toDouble);
+        au = parseToList("au", toDouble);
+        ia = parseToList("ia", toInt);
+        ja = parseToList("ja", toInt);
+        b = parseToList("b", toDouble);
     }
 
 
@@ -66,7 +101,7 @@ public class SparseMatrix {
         return b;
     }
 
-    private List<Double> multiply(final List<Double> other) {
+    public List<Double> multiply(final List<Double> other) {
         int border = 0;
         final List<Double> res = new ArrayList<>();
         for (int i = 0; i < other.size(); i++) {
@@ -78,7 +113,7 @@ public class SparseMatrix {
             for (int j = 0; j < cnt; j++) {
                 final int column = ja.get(border + j);
                 res.set(i, res.get(i) + al.get(border + j) * other.get(column));
-                res.set(column, res.get(column) +  au.get(border + j) * other.get(i));
+                res.set(column, res.get(column) + au.get(border + j) * other.get(i));
             }
             border += cnt;
         }
@@ -117,7 +152,14 @@ public class SparseMatrix {
         return ans;
     }
 
+    private int countIterations = 0;
+
+    public int getIterations() {
+        return countIterations;
+    }
+
     public List<Double> conjugate() {
+        countIterations = 0;
         List<Double> x = new ArrayList<>();
         x.add(1.0);
         for (int i = 1; i < b.size(); i++) {
@@ -126,13 +168,14 @@ public class SparseMatrix {
         List<Double> r = subtract(b, multiply(x));
         List<Double> z = new ArrayList<>(r);
         for (int i = 1; i <= 1000; i++) {
+            countIterations++;
             final List<Double> zz = multiply(z);
             final Double alpha = scalar(r, r) / scalar(zz, z);
             final List<Double> xk = sum(x, mulOnCnt(z, alpha));
             final List<Double> rk = subtract(r, mulOnCnt(zz, alpha));
             double beta = scalar(rk, rk) / scalar(r, r);
             final List<Double> zk = sum(rk, mulOnCnt(z, beta));
-            if ((scalar(rk, rk) / scalar(b, b)) <= 1e-7) {
+            if (Math.sqrt(scalar(rk, rk) / scalar(b, b)) <= 1e-14) {
                 return xk;
             }
             x = xk;
@@ -168,6 +211,16 @@ public class SparseMatrix {
             }
         } else {
             return 0;
+        }
+    }
+
+
+    private <T> List<T> parseToList(final @NotNull String fileName, final Function<String, T> function) {
+        try (BufferedReader bufferedReader = Files.newBufferedReader(Path.of(directory).resolve(fileName))) {
+            final List<String> currentLine = Arrays.asList(bufferedReader.readLine().split(" "));
+            return currentLine.stream().map(function).collect(Collectors.toList());
+        } catch (final @NotNull IOException | NullPointerException exception) {
+            return new ArrayList<>();
         }
     }
 }

@@ -83,6 +83,15 @@ public final class BaseMatrix {
         elements.get(i).set(j, element);
     }
 
+
+    public List<List<Double>> getElements() {
+        return elements;
+    }
+
+    public List<Double> getB() {
+        return b;
+    }
+
     /**
      * Инициализирует словарь значениями по умолчанию
      *

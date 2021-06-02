@@ -49,13 +49,47 @@ public final class ProfileMatrix {
      */
     private final List<Double> b;
 
-    public ProfileMatrix(final String directoryName) {
+    public ProfileMatrix(final String directoryName, final int k) {
         this.directoryName = directoryName;
         di = parseToList("di", toDouble);
         al = parseToList("al", toDouble);
         au = parseToList("au", toDouble);
         ia = parseToList("ia", toInt);
         b = parseToList("b", toDouble);
+        evaluateDi(k);
+        final List<Double> I = new ArrayList<>();
+        for (int i = 0; i < di.size(); i++) {
+            I.add(i + 1.0);
+        }
+        evaluateB(I);
+    }
+
+    private void evaluateB(final List<Double> ans) {
+        for (int i = 0; i + 1 < ia.size(); i++) {
+            for (int j = ia.get(i); j < ia.get(i + 1); j++) {
+                final int prof = ia.get(i + 1) - ia.get(i);
+                final int zeros = i - prof;
+                final int k = (j + zeros - ia.get(i));
+                b.set(i, b.get(i) + ans.get(k) * al.get(j));
+                b.set(k, b.get(k) + ans.get(i) * au.get(j));
+            }
+            b.set(i, b.get(i) + ans.get(i) * di.get(i));
+        }
+    }
+
+    private void evaluateDi(final int k) {
+        for (int i = 0; i < di.size(); i++) {
+            long sum = 0;
+            for (int j = 0; j < di.size(); j++) {
+                if (i == j) {
+                    continue;
+                } else {
+                    sum += get(i, j);
+                }
+            }
+            di.set(i, (double) -sum);
+        }
+        di.set(0, di.get(0) + Math.pow(10, -k));
     }
 
     /**
@@ -114,7 +148,7 @@ public final class ProfileMatrix {
         if (j < zeros) {
             return 0.0;
         } else {
-            return arr.get(ia.get(i) + (j - zeros) - 1);
+            return arr.get(ia.get(i) + (j - zeros));
         }
     }
 
@@ -134,7 +168,7 @@ public final class ProfileMatrix {
         final int prof = ia.get(i + 1) - ia.get(i);
         final int zeros = i - prof;
         if (j >= zeros) {
-            arr.set(ia.get(i) + (j - zeros) - 1, newValue);
+            arr.set(ia.get(i) + (j - zeros), newValue);
         }
     }
 
@@ -284,5 +318,8 @@ public final class ProfileMatrix {
 
     /////////////////////////////////////////////////
 
+    record poshelNahuy(int fuck, double you) {
+
+    }
 
 }

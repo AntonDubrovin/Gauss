@@ -149,34 +149,29 @@ public final class MatrixGenerator {
      */
     public void generateProfileGilbertMatrix(final int k, final int n) {
         final int MOD = 5;
-        final int MAX_DISTANCE_FROM_DIAGONAL = 5;
         ia.add(0);
         final Random random = new Random();
-        long sum = 0;
         for (int i = 0; i < n; i++) {
-            int index = Integer.max((random.nextInt() % (i + 1) + (i + 1)) % (i + 1), i - MAX_DISTANCE_FROM_DIAGONAL);
+            int index = 0;
             ia.add(ia.get(i) + i - index);
             for (int j = index; j < i; j++) {
-                int ran = (random.nextInt() % MOD + MOD) % MOD;
+                int ran = (random.nextInt(MOD));
                 al.add((double) -ran);
-                sum += ran;
             }
             for (int j = index; j < i; j++) {
-                int ran = (random.nextInt() % MOD + MOD) % MOD;
+                int ran = (random.nextInt(MOD));
                 au.add((double) -ran);
-                sum += ran;
             }
         }
-        List<Double> ans = new ArrayList<>(n);
+        //List<Double> ans = new ArrayList<>(n);
         for (int i = 1; i <= n; i++) {
-            ans.add((double) i);
+            //ans.add((double) i);
             b.add(0.0);
         }
-        di.add((double) sum + Math.pow(10.0, -k));
-        for (int i = 1; i < n; i++) {
-            di.add((double) sum);
+        for (int i = 0; i < n; i++) {
+            di.add(0.0);
         }
-        computeB(ans);
+        //computeB(ans);
         out();
     }
 
@@ -184,35 +179,33 @@ public final class MatrixGenerator {
         final int MOD = 5;
         ia.add(0);
         final Random random = new Random();
-        long sum = 0;
 
         for (int i = 0; i < n; i++) {
-            int index = Integer.max((random.nextInt() % (i + 1) + (i + 1)) % (i + 1), i - distance);
-
+            int index = 0;
             int zeros = 0;
             for (int j = index; j < i; j++) {
-                int ran = (random.nextInt() % MOD + MOD) % MOD;
+                int ran = (random.nextInt(MOD)) * (flag ? 1 : -1) ;
                 if (ran != 0) {
                     al.add((double) -ran);
                     au.add((double) -ran);
                     ja.add(j);
-                    sum += ran * 2;
                 } else {
                     zeros++;
                 }
             }
             ia.add(ia.get(i) + i - index - zeros);
         }
-        final List<Double> ans = new ArrayList<>(n);
+
+
+        for (int i = 0; i < n; i++) {
+            di.add(0.0);
+        }
+        //final List<Double> ans = new ArrayList<>(n);
         for (int i = 1; i <= n; i++) {
-            ans.add((double) i);
+            //ans.add((double) i);
             b.add(0.0);
         }
-        di.add(((double) sum + 1.0) * (flag ? 1 : -1));
-        for (int i = 1; i < n; i++) {
-            di.add(((double) sum) * (flag ? 1 : -1));
-        }
-        computeBB(ans);
+        //computeBB(ans);
         out();
     }
 
@@ -431,7 +424,7 @@ public final class MatrixGenerator {
 
         final List<Double> xes = generateList(size, -size, size);
         final List<Double> b = computeB(list, xes);
-        System.out.println("GENERATED MATRIX");
+        /*System.out.println("GENERATED MATRIX");
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
                 System.out.print(list.get(i).get(j) + " ");
@@ -442,7 +435,7 @@ public final class MatrixGenerator {
         System.out.println("GENERATED XES");
         for (Double x : xes) {
             System.out.print(x + " ");
-        }
+        }*/
 
         return new SparseMatrix(list, b);
     }

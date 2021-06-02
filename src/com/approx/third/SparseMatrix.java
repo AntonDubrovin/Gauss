@@ -22,7 +22,7 @@ public class SparseMatrix {
     private final List<Double> di;
     private final List<Integer> ia;
     private final List<Integer> ja;
-    public final List<Double> b;
+    public List<Double> b;
 
     private String directory;
 
@@ -61,8 +61,29 @@ public class SparseMatrix {
         ia = parseToList("ia", toInt);
         ja = parseToList("ja", toInt);
         b = parseToList("b", toDouble);
+        evaluateDi();
+        final List<Double> I = new ArrayList<>();
+        for (int i = 0; i < di.size(); i++) {
+            I.add(i + 1.0);
+        }
+        computeBB(I);
     }
 
+    private void computeBB(final List<Double> ans) {
+        b = multiply(ans);
+    }
+
+    private void evaluateDi() {
+        final List<Double> I = new ArrayList<>();
+        for (int i = 0; i < di.size(); i++) {
+            I.add(1.0);
+        }
+        List<Double> diag = multiply(I);
+        for (int i = 0; i < diag.size(); i++) {
+            di.set(i, -diag.get(i));
+        }
+        di.set(0, di.get(0) + 1.0);
+    }
 
     private void evaluateIa(List<List<Double>> matrix,
                             List<Double> all,
@@ -175,7 +196,7 @@ public class SparseMatrix {
             final List<Double> rk = subtract(r, mulOnCnt(zz, alpha));
             double beta = scalar(rk, rk) / scalar(r, r);
             final List<Double> zk = sum(rk, mulOnCnt(z, beta));
-            if (Math.sqrt(scalar(rk, rk) / scalar(b, b)) <= 1e-14) {
+            if (Math.sqrt(scalar(rk, rk) / scalar(b, b)) <= 1e-12) {
                 return xk;
             }
             x = xk;

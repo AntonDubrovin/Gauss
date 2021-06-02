@@ -114,7 +114,7 @@ public final class ProfileMatrix {
         if (j < zeros) {
             return 0.0;
         } else {
-            return arr.get(ia.get(i) + (j - zeros) - 1);
+            return arr.get(ia.get(i) + (j - zeros));
         }
     }
 
@@ -134,7 +134,7 @@ public final class ProfileMatrix {
         final int prof = ia.get(i + 1) - ia.get(i);
         final int zeros = i - prof;
         if (j >= zeros) {
-            arr.set(ia.get(i) + (j - zeros) - 1, newValue);
+            arr.set(ia.get(i) + (j - zeros), newValue);
         }
     }
 

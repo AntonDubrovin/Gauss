@@ -31,7 +31,7 @@ public class Tester {
     /**
      * Получение значений для 2 пункта лабораторной работы
      */
-    private static void second() {
+   /* private static void second() {
         for (int n = 10; n <= 1000; n *= 10) {
             for (int k = 0; k <= 10; k++) {
                 final String fileName = "second_try_" + n + "_" + k;
@@ -43,7 +43,7 @@ public class Tester {
                 System.out.println(n + " " + k + " " + checkSecond(answer) + " " + checkSecondNorm(answer));
             }
         }
-    }
+    }*/
 
     /**
      * Получение значений для 3 пункта лабораторной работы
@@ -82,9 +82,9 @@ public class Tester {
 
     private static void fifth() {
         //fifth_first();
-        //fifth_second();
+        fifth_second();
         //fifth_third();
-        fifth_fourth();
+        //fifth_fourth();
     }
 
     private static void fifth_first() {
@@ -109,36 +109,54 @@ public class Tester {
     }
 
     private static void fifth_second() {
-        for (int i = 1; i <= 1000; i *= 10) {
+        for (int i = 10; i <= 10000; i *= 10) {
             final String fileName = "fifth_try_second_" + i;
             final MatrixGenerator matrixGenerator = new MatrixGenerator(fileName);
-            matrixGenerator.generateSparseDiagonalMatrix(10000, 100, true);
-            final SparseMatrix sparseMatrix = new SparseMatrix(fileName);
-            List<Double> solvation = sparseMatrix.conjugate();
-            System.out.println(distance(solvation));
+            //matrixGenerator.generateSparseDiagonalMatrix(i, 1000, true);
+            final SparseMatrix sparseMatrix = matrixGenerator.generateSparseDiagonalMatrix(i);
+            List<Double> solved = sparseMatrix.conjugate();
+            //System.out.println("ans: " + solved);
+            System.out.println("n: " + i);
+            System.out.println("итераций: " + sparseMatrix.getIterations());
+            System.out.println("||x* - x_k||: " + checkSecond(solved));
+            System.out.println("||x* - x_k|| / ||x*||: " + checkSecondNorm(solved));
+            cond(sparseMatrix, solved);
+            System.out.println();
         }
     }
 
     private static void fifth_third() {
-        for (int i = 1; i <= 1000; i *= 10) {
+        for (int i = 100000; i <= 100000; i *= 10) {
             final String fileName = "fifth_try_third_" + i;
             final MatrixGenerator matrixGenerator = new MatrixGenerator(fileName);
-            matrixGenerator.generateSparseDiagonalMatrix(10000, 100, false);
+            matrixGenerator.generateSparseDiagonalMatrix(i, 100, false);
             final SparseMatrix sparseMatrix = new SparseMatrix(fileName);
-            List<Double> solvation = sparseMatrix.conjugate();
-            System.out.println(distance(solvation));
+            List<Double> solved = sparseMatrix.conjugate();
+            System.out.println("n: " + i);
+            System.out.println("итераций: " + sparseMatrix.getIterations());
+            System.out.println("||x* - x_k||: " + checkSecond(solved));
+            System.out.println("||x* - x_k|| / ||x*||: " + checkSecondNorm(solved));
+            cond(sparseMatrix, solved);
+            System.out.println();
         }
     }
 
     private static void fifth_fourth() {
-        for (int i = 100; i <= 1000; i += 100) {
+        for (int i = 1000; i <= 1000; i += 25) {
             final String fileName = "fifth_try_fourth_" + i;
             final MatrixGenerator matrixGenerator = new MatrixGenerator(fileName);
             final BaseMatrix baseMatrix = matrixGenerator.generateGilbertMatrix(fileName, i);
             final SparseMatrix sparseMatrix = new SparseMatrix(baseMatrix.getElements(), baseMatrix.getB());
             final List<Double> solved = sparseMatrix.conjugate();
-            System.out.println(distance(solved));
+            System.out.println("n: " + i);
+            System.out.println("итераций: " + sparseMatrix.getIterations());
+            System.out.println("||x* - x_k||: " + checkSecond(solved));
+            System.out.println("||x* - x_k|| / ||x*||: " + checkSecondNorm(solved));
+            //System.out.println("ans: " + solved);
+            //System.out.println(distance(solved));
+            //System.out.println("Check second: " + checkSecond(solved));
             cond(sparseMatrix, solved);
+            System.out.println();
         }
     }
 
@@ -168,7 +186,7 @@ public class Tester {
             System.out.println(currentLine.size() + " ||| " + ans + " " + ans / norm + " " + baseCnt +
                     " ||| " + ans1 + " " + ans1 / norm + " " + profileCnt);
 
-        } catch (final @NotNull IOException ignored) {
+        } catch (final IOException ignored) {
         }
     }
 

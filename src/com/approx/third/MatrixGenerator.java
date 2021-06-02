@@ -143,43 +143,93 @@ public final class MatrixGenerator {
     /**
      * Генерирует Гильбертову матрицу в профильном формате и записывает её в файл
      *
-     * @param k параметр Гильбертовой матрицы
+     *
      * @param n Размерность матрицы
      * @see #out()
      */
-    public void generateProfileGilbertMatrix(final int k, final int n) {
-        final int MOD = 5;
-        final int MAX_DISTANCE_FROM_DIAGONAL = 5;
-        ia.add(0);
-        final Random random = new Random();
-        long sum = 0;
+    public SparseMatrix generateSparseDiagonalMatrix(final int n) {
+        double[][] mat = generateDiagonalMatrix(n);
+        double[] t = new double[n];
         for (int i = 0; i < n; i++) {
-            int index = Integer.max((random.nextInt() % (i + 1) + (i + 1)) % (i + 1), i - MAX_DISTANCE_FROM_DIAGONAL);
-            ia.add(ia.get(i) + i - index);
-            for (int j = index; j < i; j++) {
-                int ran = (random.nextInt() % MOD + MOD) % MOD;
-                al.add((double) -ran);
-                sum += ran;
+            t[i] = i + 1;
+        }
+        double[] bt = multiplyOnVector(mat, t);
+        List<List<Double>> matrix = new ArrayList<>(n);
+        for (int i = 0; i < n; i++){
+            List<Double> list = new ArrayList<>(n);
+            for (int j = 0; j < n; j++) {
+                list.add(mat[i][j]);
             }
-            for (int j = index; j < i; j++) {
-                int ran = (random.nextInt() % MOD + MOD) % MOD;
-                au.add((double) -ran);
-                sum += ran;
-            }
+            matrix.add(list);
         }
-        List<Double> ans = new ArrayList<>(n);
-        for (int i = 1; i <= n; i++) {
-            ans.add((double) i);
-            b.add(0.0);
+        List<Double> b = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            b.add(bt[i]);
         }
-        di.add((double) sum + Math.pow(10.0, -k));
-        for (int i = 1; i < n; i++) {
-            di.add((double) sum);
-        }
-        computeB(ans);
-        out();
+        return new SparseMatrix(matrix, b);
     }
 
+    public double[] multiplyOnVector(double[][] matrix, double[] vector) {
+        int n = matrix.length;
+        double[] f = new double[n];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                f[i] += vector[j] * matrix[i][j];
+            }
+        }
+        return f;
+    }
+
+    public double[][] generateDiagonalMatrix(int n) {
+        double[][] matrix = new double[n][n];
+        for (int i = 0; i < n; i++) {
+            int sum = 0;
+            for (int j = 0; j < n; j++) {
+                if (i != j) {
+                    int el = (int) (Math.random() * 5) * -1;
+                    sum += el;
+                    matrix[i][j] = el;
+                }
+            }
+            matrix[i][i] = -sum;
+            if (i == 0) {
+                matrix[i][i] += 1;
+            }
+        }
+        return matrix;
+    }
+
+    /*final int MOD = 5;
+    final int MAX_DISTANCE_FROM_DIAGONAL = 5;
+        ia.add(0);
+    final Random random = new Random();
+    long sum = 0;
+        for (int i = 0; i < n; i++) {
+        int index = Integer.max((random.nextInt() % (i + 1) + (i + 1)) % (i + 1), i - MAX_DISTANCE_FROM_DIAGONAL);
+        ia.add(ia.get(i) + i - index);
+        for (int j = index; j < i; j++) {
+            int ran = (random.nextInt() % MOD + MOD) % MOD;
+            al.add((double) -ran);
+            sum += ran;
+        }
+        for (int j = index; j < i; j++) {
+            int ran = (random.nextInt() % MOD + MOD) % MOD;
+            au.add((double) -ran);
+            sum += ran;
+        }
+    }
+    List<Double> ans = new ArrayList<>(n);
+        for (int i = 1; i <= n; i++) {
+        ans.add((double) i);
+        b.add(0.0);
+    }
+        di.add((double) sum + Math.pow(10.0, -k));
+        for (int i = 1; i < n; i++) {
+        di.add((double) sum);
+    }
+    computeB(ans);
+    out();
+*/
     public void generateSparseDiagonalMatrix(final int n, final int distance, final boolean flag) {
         final int MOD = 5;
         ia.add(0);
@@ -193,8 +243,8 @@ public final class MatrixGenerator {
             for (int j = index; j < i; j++) {
                 int ran = (random.nextInt() % MOD + MOD) % MOD;
                 if (ran != 0) {
-                    al.add((double) -ran);
-                    au.add((double) -ran);
+                    al.add((double) ran * (flag ? -1 : 1));
+                    au.add((double) ran * (flag ? -1 : 1));
                     ja.add(j);
                     sum += ran * 2;
                 } else {

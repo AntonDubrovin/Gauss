@@ -1,5 +1,7 @@
 package com.approx.third;
 
+import com.approx.third.matrix.BaseMatrix;
+import com.approx.third.matrix.SparseMatrix;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
@@ -39,7 +41,7 @@ public final class MatrixGenerator {
     /**
      *
      */
-    private final List<Integer> ja;
+    private final @NotNull List<Integer> ja;
     /**
      * Вектор правой части
      */
@@ -123,31 +125,12 @@ public final class MatrixGenerator {
     }
 
     /**
-     * Устанавливвает значение вектора правой части по переданному вектору решения
-     *
-     * @param ans Вектор решений
-     */
-    public void computeB(final @NotNull List<Double> ans) {
-        for (int i = 0; i + 1 < ia.size(); i++) {
-            for (int j = ia.get(i); j < ia.get(i + 1); j++) {
-                final int prof = ia.get(i + 1) - ia.get(i);
-                final int zeros = i - prof;
-                final int k = (j + zeros - ia.get(i));
-                b.set(i, b.get(i) + ans.get(k) * al.get(j));
-                b.set(k, b.get(k) + ans.get(i) * au.get(j));
-            }
-            b.set(i, b.get(i) + ans.get(i) * di.get(i));
-        }
-    }
-
-    /**
      * Генерирует Гильбертову матрицу в профильном формате и записывает её в файл
      *
-     * @param k параметр Гильбертовой матрицы
      * @param n Размерность матрицы
      * @see #out()
      */
-    public void generateProfileGilbertMatrix(final int k, final int n) {
+    public void generateProfileDiagonalMatrix(final int n) {
         final int MOD = 5;
         ia.add(0);
         final Random random = new Random();
@@ -163,19 +146,16 @@ public final class MatrixGenerator {
                 au.add((double) -ran);
             }
         }
-        //List<Double> ans = new ArrayList<>(n);
         for (int i = 1; i <= n; i++) {
-            //ans.add((double) i);
             b.add(0.0);
         }
         for (int i = 0; i < n; i++) {
             di.add(0.0);
         }
-        //computeB(ans);
         out();
     }
 
-    public void generateSparseDiagonalMatrix(final int n, final int distance, final boolean flag) {
+    public void generateSparseDiagonalMatrix(final int n, final boolean flag) {
         final int MOD = 5;
         ia.add(0);
         final Random random = new Random();
@@ -184,7 +164,7 @@ public final class MatrixGenerator {
             int index = 0;
             int zeros = 0;
             for (int j = index; j < i; j++) {
-                int ran = (random.nextInt(MOD)) * (flag ? 1 : -1) ;
+                int ran = (random.nextInt(MOD)) * (flag ? 1 : -1);
                 if (ran != 0) {
                     al.add((double) -ran);
                     au.add((double) -ran);
@@ -200,17 +180,10 @@ public final class MatrixGenerator {
         for (int i = 0; i < n; i++) {
             di.add(0.0);
         }
-        //final List<Double> ans = new ArrayList<>(n);
         for (int i = 1; i <= n; i++) {
-            //ans.add((double) i);
             b.add(0.0);
         }
-        //computeBB(ans);
         out();
-    }
-
-    private void computeBB(final List<Double> ans) {
-        b = multiply(ans);
     }
 
     /**
@@ -243,10 +216,9 @@ public final class MatrixGenerator {
     /**
      * Генерирует Гильбертову матрицу размерноти {@code n} и векрот решений в пределах от {@code min} до {@code max}
      *
-     * @param fileName Имя файла
-     * @param n        Размерность матрицы
+     * @param n Размерность матрицы
      */
-    public BaseMatrix generateGilbertMatrix(final @NotNull String fileName, final int n) {
+    public @NotNull BaseMatrix generateGilbertMatrix(final int n) {
         final List<List<Double>> list = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
             list.add(new ArrayList<>(Collections.nCopies(n, 0.0)));
@@ -356,25 +328,6 @@ public final class MatrixGenerator {
         writeToFile("ja", ja);
     }
 
-    private List<Double> multiply(final List<Double> other) {
-        int border = 0;
-        final List<Double> res = new ArrayList<>();
-        for (int i = 0; i < other.size(); i++) {
-            res.add(0.0);
-        }
-        for (int i = 0; i < other.size(); i++) {
-            int cnt = ia.get(i + 1) - ia.get(i);
-            res.set(i, res.get(i) + di.get(i) * other.get(i));
-            for (int j = 0; j < cnt; j++) {
-                final int column = ja.get(border + j);
-                res.set(i, res.get(i) + al.get(border + j) * other.get(column));
-                res.set(column, res.get(column) + au.get(border + j) * other.get(i));
-            }
-            border += cnt;
-        }
-        return res;
-    }
-
     /**
      * Генерирует строковое представление переданного массива элементов
      *
@@ -403,7 +356,7 @@ public final class MatrixGenerator {
     }
 
 
-    public SparseMatrix generateSparseMatrix(final int size) {
+    public @NotNull SparseMatrix generateSparseMatrix(final int size) {
         final List<List<Double>> list = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             list.add(new ArrayList<>(Collections.nCopies(size, 0.0)));
@@ -424,18 +377,6 @@ public final class MatrixGenerator {
 
         final List<Double> xes = generateList(size, -size, size);
         final List<Double> b = computeB(list, xes);
-        /*System.out.println("GENERATED MATRIX");
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
-                System.out.print(list.get(i).get(j) + " ");
-            }
-            System.out.println();
-        }
-        System.out.println();
-        System.out.println("GENERATED XES");
-        for (Double x : xes) {
-            System.out.print(x + " ");
-        }*/
 
         return new SparseMatrix(list, b);
     }

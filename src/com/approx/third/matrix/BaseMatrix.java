@@ -1,6 +1,7 @@
-package com.approx.third;
+package com.approx.third.matrix;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -10,6 +11,18 @@ import java.util.stream.Collectors;
  */
 public final class BaseMatrix {
 
+    @Override
+    public boolean equals(final @Nullable Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BaseMatrix that = (BaseMatrix) o;
+        return cnt == that.cnt && Objects.equals(getElements(), that.getElements()) && Objects.equals(getB(), that.getB());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(cnt, getElements(), getB());
+    }
 
     /**
      * Переменная хранящая число итераций алгоритм Гаусса

@@ -1,32 +1,15 @@
-package com.approx.third;
+package com.approx.third.matrix;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
-public class SparseMatrix {
+public final class SparseMatrix extends AbstractProfileMatrix {
 
-    final Function<String, Double> toDouble = Double::parseDouble;
-    final Function<String, Integer> toInt = Integer::parseInt;
-
-    private final List<Double> al;
-    private final List<Double> au;
-    private final List<Double> di;
-    private final List<Integer> ia;
     private final List<Integer> ja;
-    public List<Double> b;
 
-    private String directory;
-
-    public SparseMatrix(final List<List<Double>> matrix, final List<Double> b) {
+    public SparseMatrix(final @NotNull List<List<Double>> matrix, final List<Double> b) {
         this.b = b;
         this.di = evaluateDiagonal(matrix);
         this.ia = new ArrayList<>();
@@ -39,22 +22,9 @@ public class SparseMatrix {
         this.ja = jaa;
     }
 
-    public SparseMatrix(final List<Double> al,
-                        final List<Double> au,
-                        final List<Double> di,
-                        final List<Integer> ja,
-                        final List<Integer> ia,
-                        final List<Double> b) {
-        this.al = al;
-        this.au = au;
-        this.di = di;
-        this.ja = ja;
-        this.ia = ia;
-        this.b = b;
-    }
 
     public SparseMatrix(final String directory) {
-        this.directory = directory;
+        this.directoryName = directory;
         di = parseToList("di", toDouble);
         al = parseToList("al", toDouble);
         au = parseToList("au", toDouble);
@@ -69,7 +39,7 @@ public class SparseMatrix {
         computeBB(I);
     }
 
-    private void computeBB(final List<Double> ans) {
+    private void computeBB(final @NotNull List<Double> ans) {
         b = multiply(ans);
     }
 
@@ -85,10 +55,10 @@ public class SparseMatrix {
         di.set(0, di.get(0) + 1.0);
     }
 
-    private void evaluateIa(List<List<Double>> matrix,
-                            List<Double> all,
-                            List<Double> auu,
-                            List<Integer> jaa) {
+    private void evaluateIa(@NotNull List<List<Double>> matrix,
+                            @NotNull List<Double> all,
+                            @NotNull List<Double> auu,
+                            @NotNull List<Integer> jaa) {
         ia.add(0);
         ia.add(0);
         for (int i = 1; i < matrix.size(); i++) {
@@ -97,11 +67,11 @@ public class SparseMatrix {
 
     }
 
-    private int profileLen(List<List<Double>> matrix,
+    private int profileLen(@NotNull List<List<Double>> matrix,
                            int row,
-                           List<Double> all,
-                           List<Double> auu,
-                           List<Integer> jaa) {
+                           @NotNull List<Double> all,
+                           @NotNull List<Double> auu,
+                           @NotNull List<Integer> jaa) {
         int ans = 0;
         for (int i = 0; i < row; i++) {
             if (Math.abs(matrix.get(row).get(i)) >= 1e-14) {
@@ -114,7 +84,7 @@ public class SparseMatrix {
         return ans;
     }
 
-    private List<Double> evaluateDiagonal(List<List<Double>> matrix) {
+    private @NotNull List<Double> evaluateDiagonal(@NotNull List<List<Double>> matrix) {
         final List<Double> b = new ArrayList<>();
         for (int i = 0; i < matrix.size(); i++) {
             b.add(matrix.get(i).get(i));
@@ -122,7 +92,7 @@ public class SparseMatrix {
         return b;
     }
 
-    public List<Double> multiply(final List<Double> other) {
+    public @NotNull List<Double> multiply(final @NotNull List<Double> other) {
         int border = 0;
         final List<Double> res = new ArrayList<>();
         for (int i = 0; i < other.size(); i++) {
@@ -141,7 +111,7 @@ public class SparseMatrix {
         return res;
     }
 
-    private List<Double> subtract(final List<Double> first, final List<Double> second) {
+    private @NotNull List<Double> subtract(final @NotNull List<Double> first, final @NotNull List<Double> second) {
         final List<Double> result = new ArrayList<>();
         for (int i = 0; i < first.size(); i++) {
             result.add(first.get(i) - second.get(i));
@@ -149,7 +119,7 @@ public class SparseMatrix {
         return result;
     }
 
-    private List<Double> sum(final List<Double> first, final List<Double> second) {
+    private @NotNull List<Double> sum(final @NotNull List<Double> first, final @NotNull List<Double> second) {
         final List<Double> ans = new ArrayList<>();
         for (int i = 0; i < first.size(); i++) {
             ans.add(first.get(i) + second.get(i));
@@ -157,7 +127,7 @@ public class SparseMatrix {
         return ans;
     }
 
-    private Double scalar(final List<Double> first, final List<Double> second) {
+    private Double scalar(final @NotNull List<Double> first, final @NotNull List<Double> second) {
         double ans = 0.0;
         for (int i = 0; i < first.size(); i++) {
             ans += first.get(i) * second.get(i);
@@ -165,7 +135,7 @@ public class SparseMatrix {
         return ans;
     }
 
-    private List<Double> mulOnCnt(final List<Double> list, final Double cnt) {
+    private @NotNull List<Double> mulOnCnt(final @NotNull List<Double> list, final Double cnt) {
         final List<Double> ans = new ArrayList<>();
         for (Double aDouble : list) {
             ans.add(aDouble * cnt);
@@ -179,7 +149,7 @@ public class SparseMatrix {
         return countIterations;
     }
 
-    public List<Double> conjugate() {
+    public @NotNull List<Double> conjugate() {
         countIterations = 0;
         List<Double> x = new ArrayList<>();
         x.add(1.0);
@@ -208,40 +178,4 @@ public class SparseMatrix {
     }
 
 
-    public double get(int i, int j) {
-        if (i == j) {
-            return di.get(i);
-        }
-        boolean f = true;
-        if (j > i) {
-            int tmp = j;
-            j = i;
-            i = tmp;
-            f = false;
-        }
-        int countInRow = ia.get(i + 1) - ia.get(i);
-        List<Integer> getAllColInRow = new ArrayList<>();
-        for (int z = ia.get(i); z < ia.get(i) + countInRow; z++) {
-            getAllColInRow.add(ja.get(z));
-        }
-        if (getAllColInRow.contains(j)) {
-            if (f) {
-                return al.get(ia.get(i) + getAllColInRow.indexOf(j));
-            } else {
-                return au.get(ia.get(i) + getAllColInRow.indexOf(j));
-            }
-        } else {
-            return 0;
-        }
-    }
-
-
-    private <T> List<T> parseToList(final @NotNull String fileName, final Function<String, T> function) {
-        try (BufferedReader bufferedReader = Files.newBufferedReader(Path.of(directory).resolve(fileName))) {
-            final List<String> currentLine = Arrays.asList(bufferedReader.readLine().split(" "));
-            return currentLine.stream().map(function).collect(Collectors.toList());
-        } catch (final @NotNull IOException | NullPointerException exception) {
-            return new ArrayList<>();
-        }
-    }
 }

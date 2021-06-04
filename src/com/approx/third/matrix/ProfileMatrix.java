@@ -1,53 +1,15 @@
-package com.approx.third;
+package com.approx.third.matrix;
 
+import com.approx.third.matrix.AbstractProfileMatrix;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Класс содержащий профильную матрицу
  */
-public final class ProfileMatrix {
+public final class ProfileMatrix extends AbstractProfileMatrix {
 
-
-    /**
-     * Переменная хранящая число итераций метода LU разложения
-     */
-    private int cnt = 0;
-
-    final Function<String, Double> toDouble = Double::parseDouble;
-    final Function<String, Integer> toInt = Integer::parseInt;
-
-    /**
-     * Имя дериктории, в которой содержатся файлы для текущего тестирования
-     */
-    private final String directoryName;
-    /**
-     * Вектор значений диоганальных элементов
-     */
-    private final List<Double> di;
-    /**
-     * Значения ненулевых элементов профильной матрицы по строкам
-     */
-    private final List<Double> al;
-    /**
-     * Значения ненулевых элементов профильной матрицы по столбцам
-     */
-    private final List<Double> au;
-    /**
-     * Массив профилей матрицы
-     */
-    private final List<Integer> ia;
-    /**
-     * Вектор правой части
-     */
-    private final List<Double> b;
 
     public ProfileMatrix(final String directoryName, final int k) {
         this.directoryName = directoryName;
@@ -64,7 +26,7 @@ public final class ProfileMatrix {
         evaluateB(I);
     }
 
-    private void evaluateB(final List<Double> ans) {
+    private void evaluateB(final @NotNull List<Double> ans) {
         for (int i = 0; i + 1 < ia.size(); i++) {
             for (int j = ia.get(i); j < ia.get(i + 1); j++) {
                 final int prof = ia.get(i + 1) - ia.get(i);
@@ -81,9 +43,7 @@ public final class ProfileMatrix {
         for (int i = 0; i < di.size(); i++) {
             long sum = 0;
             for (int j = 0; j < di.size(); j++) {
-                if (i == j) {
-                    continue;
-                } else {
+                if (i != j) {
                     sum += get(i, j);
                 }
             }
@@ -97,23 +57,6 @@ public final class ProfileMatrix {
      */
     public int size() {
         return di.size();
-    }
-
-    /**
-     * Читает массив из файла, и преобразует его в {@code List<T>}
-     *
-     * @param fileName Имя файла, в котором содежится массив
-     * @param function Функция преобразующая строку в {@code List<T>}
-     * @param <T>      ЖЕНЕРИГ
-     * @return {@code List<T>}
-     */
-    private <T> List<T> parseToList(final @NotNull String fileName, final Function<String, T> function) {
-        try (BufferedReader bufferedReader = Files.newBufferedReader(Path.of(directoryName).resolve(fileName))) {
-            final List<String> currentLine = Arrays.asList(bufferedReader.readLine().split(" "));
-            return currentLine.stream().map(function).collect(Collectors.toList());
-        } catch (final @NotNull IOException | NullPointerException exception) {
-            return new ArrayList<>();
-        }
     }
 
     /**
@@ -314,12 +257,6 @@ public final class ProfileMatrix {
      */
     public int getCount() {
         return cnt;
-    }
-
-    /////////////////////////////////////////////////
-
-    record poshelNahuy(int fuck, double you) {
-
     }
 
 }
